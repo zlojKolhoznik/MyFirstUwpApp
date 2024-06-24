@@ -4,11 +4,97 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MyFirstUwpApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:models="using:MyFirstUwpApp.Models"
     mc:Ignorable="d"
+    Width="600"
+    Height="800"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
-
-    </Grid>
+    <RelativePanel>
+        <StackPanel Orientation="Horizontal"
+                    RelativePanel.AlignHorizontalCenterWithPanel="True"
+                    HorizontalAlignment="Center"
+                    Name="spForm">
+            <TextBox x:Name="tbFirstName"
+                     Header="First name"
+                     PlaceholderText="Enter customer's first name"
+                     FontSize="18"
+                     Margin="0,20,20,0"/>
+            <TextBox x:Name="tbLastName"
+                     Header="Last name"
+                     PlaceholderText="Enter customer's last name"
+                     FontSize="18"
+                     Margin="0,20,0,0"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal"
+                    RelativePanel.AlignHorizontalCenterWithPanel="True"
+                    RelativePanel.Below="spForm"
+                    HorizontalAlignment="Center"
+                    Name="spButtons">
+            <Button x:Name="btnSave"
+                    Content="Save"
+                    FontSize="18"
+                    Margin="0,20,0,0"
+                    Padding="15,5"
+                    RelativePanel.AlignHorizontalCenterWithPanel="True"
+                    RelativePanel.Below="spForm"/>
+            <Button x:Name="btnCancel"
+                    Content="Cancel"
+                    FontSize="18"
+                    Margin="20,20,0,0"
+                    Padding="15,5"
+                    RelativePanel.RightOf="btnSave"
+                    RelativePanel.Below="spForm"/>
+            <Button x:Name="btnDelete"
+                    Content="Delete"
+                    FontSize="18"
+                    Margin="20,20,0,0"
+                    Padding="15,5"
+                    RelativePanel.RightOf="btnCancel"
+                    RelativePanel.Below="spForm"
+                    IsEnabled="False"/>
+        </StackPanel>
+        <StackPanel RelativePanel.Below="spButtons"
+                    RelativePanel.AlignHorizontalCenterWithPanel="True"
+                    RelativePanel.AlignBottomWithPanel="True"
+                    RelativePanel.AlignLeftWithPanel="True"
+                    RelativePanel.AlignRightWithPanel="True"
+                    Margin="30">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="First name"
+                           FontSize="18"
+                           Grid.Column="0"
+                           FontWeight="Bold"/>
+                <TextBlock Text="Last name"
+                            FontSize="18"
+                            Grid.Column="1"
+                            FontWeight="Bold"/>
+            </Grid>
+            <GridView x:Name="gvCustomers"
+                      ItemsSource="{x:Bind Customers}"
+                      SelectionChanged="gvCustomers_SelectionChanged">
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Customer">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{x:Bind FirstName}"
+                                       FontSize="18"
+                                       Grid.Column="0"/>
+                            <TextBlock Text="{x:Bind LastName}"
+                                        FontSize="18"
+                                        Grid.Column="1"/>
+                        </Grid>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+        </StackPanel>
+    </RelativePanel>
 </Page>
