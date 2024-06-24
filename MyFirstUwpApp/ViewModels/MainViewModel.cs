@@ -2,12 +2,14 @@
 using MyFirstUwpApp.Services.MessageService;
 using System;
 using System.Collections.ObjectModel;
-using Windows.Foundation.Collections;
+using System.Text.Json;
+using Windows.Storage;
 
 namespace MyFirstUwpApp.ViewModels
 {
     public class MainViewModel : ObservableObject
     {
+        private const string CustomersSettingsKey = "customers-JSON";
         private readonly IMessageService _messageService;
 
         private ObservableCollection<Customer> _customers;
@@ -84,6 +86,21 @@ namespace MyFirstUwpApp.ViewModels
 
         public RelayCommand SelectCustomerCommand => new RelayCommand(SelectCustomer, CustomerExists);
 
+        public void LoadCustomers()
+        {
+            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+            if (localSettings.Values[CustomersSettingsKey] is string customersJson)
+            {
+                Customers = JsonSerializer.Deserialize<ObservableCollection<Customer>>(customersJson);
+            }
+        }
+
+        public void SaveCustomers()
+        {
+            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+            localSettings.Values[CustomersSettingsKey] = JsonSerializer.Serialize(Customers);
+        }
+
         private void AddCustomer(object value)
         {
             if (string.IsNullOrWhiteSpace(FirstName) || string.IsNullOrWhiteSpace(LastName))
@@ -109,7 +126,7 @@ namespace MyFirstUwpApp.ViewModels
 
         private async void RemoveCustomer(object value)
         {
-            var response = await _messageService.ShowPrompt("Are you sure you want to remove the customer?", PromptType.YesNo);
+            var response = await _messageService.ShowPromptAsync("Are you sure you want to remove the customer?", PromptType.YesNo);
             if (response != MessageResponse.Yes)
             {
                 return;

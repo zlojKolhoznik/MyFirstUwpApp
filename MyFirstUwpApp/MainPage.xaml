@@ -10,7 +10,8 @@
     mc:Ignorable="d"
     Width="600"
     Height="800"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    Loaded="{x:Bind ViewModel.LoadCustomers}">
 
     <RelativePanel>
         <StackPanel Orientation="Horizontal"
@@ -81,7 +82,7 @@
                           VerticalScrollMode="Auto"
                           VerticalScrollBarVisibility="Auto">
                 <GridView x:Name="gvCustomers"
-                          ItemsSource="{x:Bind ViewModel.Customers}">
+                          ItemsSource="{x:Bind ViewModel.Customers, Mode=OneWay}">
                     <GridView.ItemTemplate>
                         <DataTemplate x:DataType="models:Customer">
                             <Grid>

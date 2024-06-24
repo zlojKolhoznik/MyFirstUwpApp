@@ -25,7 +25,7 @@ namespace MyFirstUwpApp.Services.MessageService
             messageDialog.ShowAsync();
         }
 
-        public async Task<MessageResponse> ShowPrompt(string message, PromptType type)
+        public async Task<MessageResponse> ShowPromptAsync(string message, PromptType type)
         {
             var messageDialog = new Windows.UI.Popups.MessageDialog(message);
             switch (type)
@@ -44,8 +44,6 @@ namespace MyFirstUwpApp.Services.MessageService
                     messageDialog.Commands.Add(new Windows.UI.Popups.UICommand("Cancel"));
                     break;
             }
-            //var asyncOperation = messageDialog.ShowAsync();
-            //asyncOperation.AsTask().Wait();
             var result = await messageDialog.ShowAsync();
             switch (result.Label)
             {

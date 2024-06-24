@@ -10,7 +10,7 @@ namespace MyFirstUwpApp.Services.MessageService
     {
         void ShowPlainMessage(string message);
         void ShowErrorMessage(string message);
-        Task<MessageResponse> ShowPrompt(string message, PromptType type);
+        Task<MessageResponse> ShowPromptAsync(string message, PromptType type);
     }
 
     public enum MessageResponse
