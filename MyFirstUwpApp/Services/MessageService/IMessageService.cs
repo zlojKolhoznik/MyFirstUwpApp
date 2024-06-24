@@ -8,9 +8,9 @@ namespace MyFirstUwpApp.Services.MessageService
 {
     public interface IMessageService
     {
-        Task ShowPlainMessageAsync(string message);
-        Task ShowErrorMessageAsync(string message);
-        Task<MessageResponse> ShowPromptAsync(string message, PromptType type);
+        void ShowPlainMessage(string message);
+        void ShowErrorMessage(string message);
+        Task<MessageResponse> ShowPrompt(string message, PromptType type);
     }
 
     public enum MessageResponse

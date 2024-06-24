@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MyFirstUwpApp.Services.MessageService;
+using MyFirstUwpApp.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,6 +27,9 @@ namespace MyFirstUwpApp
         public MainPage()
         {
             this.InitializeComponent();
+            ViewModel = new MainViewModel(new MessageDialogService());
         }
+
+        public MainViewModel ViewModel { get; private set; }
     }
 }

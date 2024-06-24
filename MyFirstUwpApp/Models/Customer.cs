@@ -2,7 +2,7 @@
 
 namespace MyFirstUwpApp.Models
 {
-    internal class Customer : ObservableObject
+    public class Customer : ObservableObject
     {
         private string _firstName;
         private string _lastName;
@@ -34,5 +34,7 @@ namespace MyFirstUwpApp.Models
                 }
             }
         }
+
+        public static Customer Empty => new Customer { FirstName = string.Empty, LastName = string.Empty };
     }
 }

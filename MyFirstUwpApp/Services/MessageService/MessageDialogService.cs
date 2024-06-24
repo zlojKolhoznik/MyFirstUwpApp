@@ -8,24 +8,24 @@ namespace MyFirstUwpApp.Services.MessageService
 {
     public class MessageDialogService : IMessageService
     {
-        public async Task ShowErrorMessageAsync(string message)
+        public void ShowErrorMessage(string message)
         {
             var messageDialog = new Windows.UI.Popups.MessageDialog(message)
             {
                 Title = "Error"
             };
             messageDialog.Commands.Add(new Windows.UI.Popups.UICommand("Ok"));
-            await messageDialog.ShowAsync();
+            messageDialog.ShowAsync();
         }
 
-        public async Task ShowPlainMessageAsync(string message)
+        public void ShowPlainMessage(string message)
         {
             var messageDialog = new Windows.UI.Popups.MessageDialog(message);
             messageDialog.Commands.Add(new Windows.UI.Popups.UICommand("Ok"));
-            await messageDialog.ShowAsync();
+            messageDialog.ShowAsync();
         }
 
-        public async Task<MessageResponse> ShowPromptAsync(string message, PromptType type)
+        public async Task<MessageResponse> ShowPrompt(string message, PromptType type)
         {
             var messageDialog = new Windows.UI.Popups.MessageDialog(message);
             switch (type)
@@ -44,6 +44,8 @@ namespace MyFirstUwpApp.Services.MessageService
                     messageDialog.Commands.Add(new Windows.UI.Popups.UICommand("Cancel"));
                     break;
             }
+            //var asyncOperation = messageDialog.ShowAsync();
+            //asyncOperation.AsTask().Wait();
             var result = await messageDialog.ShowAsync();
             switch (result.Label)
             {
