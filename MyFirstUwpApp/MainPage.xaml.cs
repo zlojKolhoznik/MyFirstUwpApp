@@ -62,14 +62,10 @@ namespace MyFirstUwpApp
         {
             if (sender is Button button && button.DataContext is Customer customer)
             {
-                int rowIndex = ViewModel.GetCustomerIndex(customer);
-                if (rowIndex >= 0)
-                {
-                    ViewModel.SaveCustomerState(customer);
-                    dgCustomers.SelectedIndex = rowIndex;
-                    dgCustomers.CurrentColumn = dgCustomers.Columns[FirstNameColumnIndex];
-                    dgCustomers.BeginEdit();
-                }
+                ViewModel.SaveCustomerState(customer);
+                dgCustomers.SelectedItem = customer;
+                dgCustomers.CurrentColumn = dgCustomers.Columns[FirstNameColumnIndex];
+                dgCustomers.BeginEdit();
             }
         }
 

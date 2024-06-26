@@ -85,11 +85,6 @@ namespace MyFirstUwpApp.ViewModels
 
         public RelayCommand ClearSelectionCommand => new RelayCommand(ClearSelection);
 
-        public int GetCustomerIndex(Customer customer)
-        {
-            return Customers.IndexOf(customer);
-        }
-
         public void LoadCustomers()
         {
             ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
