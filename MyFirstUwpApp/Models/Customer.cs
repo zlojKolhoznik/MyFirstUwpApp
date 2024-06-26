@@ -4,18 +4,18 @@ namespace MyFirstUwpApp.Models
 {
     public class Customer : ObservableObject
     {
-        private string _firstName;
-        private string _lastName;
+        private string firstName;
+        private string lastName;
 
         [JsonPropertyName("firstName")]
         public string FirstName 
         {
-            get => _firstName; 
+            get => firstName; 
             set 
             { 
-                if (_firstName != value) 
+                if (firstName != value) 
                 { 
-                    _firstName = value; 
+                    firstName = value; 
                     OnPropertyChanged(); 
                 } 
             }
@@ -24,17 +24,15 @@ namespace MyFirstUwpApp.Models
         [JsonPropertyName("lastName")]
         public string LastName
         { 
-            get => _lastName;
+            get => lastName;
             set
             {
-                if (_lastName != value)
+                if (lastName != value)
                 {
-                    _lastName = value;
+                    lastName = value;
                     OnPropertyChanged();
                 }
             }
         }
-
-        public static Customer Empty => new Customer { FirstName = string.Empty, LastName = string.Empty };
     }
 }

@@ -9,22 +9,13 @@ namespace MyFirstUwpApp.Services.MessageService
     public interface IMessageService
     {
         void ShowPlainMessage(string message);
-        void ShowErrorMessage(string message);
-        Task<MessageResponse> ShowPromptAsync(string message, PromptType type);
+        void SendErrorMessage(string message);
+        Task<MessageResponse> SendPromptAsync(string message);
     }
 
     public enum MessageResponse
     {
         Yes,
-        No,
-        Ok,
-        Cancel
-    }
-
-    public enum PromptType
-    {
-        YesNo,
-        YesNoCancel,
-        OkCancel
+        No
     }
 }

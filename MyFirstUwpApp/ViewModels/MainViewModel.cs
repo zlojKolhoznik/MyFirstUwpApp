@@ -10,28 +10,30 @@ namespace MyFirstUwpApp.ViewModels
     public class MainViewModel : ObservableObject
     {
         private const string CustomersSettingsKey = "customers-JSON";
-        private readonly IMessageService _messageService;
+        private readonly IMessageService messageService;
 
-        private ObservableCollection<Customer> _customers;
-        private Customer _selectedCustomer;
-        private string _firstName;
-        private string _lastName;
+        private ObservableCollection<Customer> customers;
+        private Customer selectedCustomer;
+        private Customer savedCustomer;
+        private int savedCustomerIndex;
+        private string firstName;
+        private string lastName;
 
         public MainViewModel(IMessageService messageService)
         {
-            _customers = new ObservableCollection<Customer>();
-            SelectedCustomer = Customer.Empty;
-            _messageService = messageService;
+            customers = new ObservableCollection<Customer>();
+            SelectedCustomer = new Customer();
+            this.messageService = messageService;
         }
 
         public ObservableCollection<Customer> Customers
         {
-            get => _customers;
+            get => customers;
             set
             {
-                if (_customers != value)
+                if (customers != value)
                 {
-                    _customers = value;
+                    customers = value;
                     OnPropertyChanged();
                 }
             }
@@ -39,12 +41,12 @@ namespace MyFirstUwpApp.ViewModels
 
         public Customer SelectedCustomer
         {
-            get => _selectedCustomer;
+            get => selectedCustomer;
             set
             {
-                if (_selectedCustomer != value)
+                if (selectedCustomer != value)
                 {
-                    _selectedCustomer = value;
+                    selectedCustomer = value;
                     OnPropertyChanged();
                 }
             }
@@ -52,12 +54,12 @@ namespace MyFirstUwpApp.ViewModels
 
         public string FirstName
         {
-            get => _firstName;
+            get => firstName;
             set
             {
-                if (_firstName != value)
+                if (firstName != value)
                 {
-                    _firstName = value;
+                    firstName = value;
                     OnPropertyChanged();
                 }
             }
@@ -66,25 +68,27 @@ namespace MyFirstUwpApp.ViewModels
 
         public string LastName
         {
-            get => _lastName;
+            get => lastName;
             set 
             {
-                if (_lastName != value)
+                if (lastName != value)
                 {
-                    _lastName = value;
+                    lastName = value;
                     OnPropertyChanged();
                 }
             }
         }
 
+        public RelayCommand AddCustomerCommand => new RelayCommand(HandleAddCustomer);
 
-        public RelayCommand AddCustomerCommand => new RelayCommand(AddCustomer);
-
-        public RelayCommand RemoveCustomerCommand => new RelayCommand(RemoveCustomer, CustomerExists);
+        public RelayCommand RemoveCustomerCommand => new RelayCommand(HandleRemoveCustomer, CustomerExists);
 
         public RelayCommand ClearSelectionCommand => new RelayCommand(ClearSelection);
 
-        public RelayCommand SelectCustomerCommand => new RelayCommand(SelectCustomer, CustomerExists);
+        public int GetCustomerIndex(Customer customer)
+        {
+            return Customers.IndexOf(customer);
+        }
 
         public void LoadCustomers()
         {
@@ -101,43 +105,66 @@ namespace MyFirstUwpApp.ViewModels
             localSettings.Values[CustomersSettingsKey] = JsonSerializer.Serialize(Customers);
         }
 
-        private void AddCustomer(object value)
+        public void SaveCustomerState(Customer customer)
+        {
+            savedCustomer = new Customer
+            {
+                FirstName = customer.FirstName,
+                LastName = customer.LastName
+            };
+            savedCustomerIndex = Customers.IndexOf(customer);
+        }
+
+        public void RestoreSavedCustomerState()
+        {
+            if (!(savedCustomer is null))
+            {
+                Customer toRestore = Customers[savedCustomerIndex];
+                toRestore.FirstName = savedCustomer.FirstName;
+                toRestore.LastName = savedCustomer.LastName;
+                savedCustomer = null;
+            }
+        }
+
+        public void ReleaseSavedCustomerState()
+        {
+            savedCustomer = null;
+        }
+
+        private void HandleAddCustomer(object value)
         {
             if (string.IsNullOrWhiteSpace(FirstName) || string.IsNullOrWhiteSpace(LastName))
             {
-                _messageService.ShowErrorMessage("First name and last name are required");
-                return;
+                messageService.SendErrorMessage("First name and last name are required");
             }
-            if (!(value is Customer))
+            else if (!(value is Customer))
             {
-                _messageService.ShowErrorMessage("Couldn't add a new customer due to unknown error");
-                return;
+                messageService.SendErrorMessage("Couldn't add a new customer due to unknown error");
             }
-
-            var customer = (Customer)value;
-            customer.FirstName = FirstName;
-            customer.LastName = LastName;
-            if (!Customers.Contains(customer))
+            else
             {
-                Customers.Add(customer);
+                AddCustomer(value as Customer);
+                ClearSelection();
             }
-            ClearSelection();
         }
 
-        private async void RemoveCustomer(object value)
+        private void AddCustomer(Customer customer)
         {
-            var response = await _messageService.ShowPromptAsync("Are you sure you want to remove the customer?", PromptType.YesNo);
-            if (response != MessageResponse.Yes)
-            {
-                return;
-            }
+            customer.FirstName = FirstName;
+            customer.LastName = LastName;
+        }
 
-            if (!(value is Customer))
+        private async void HandleRemoveCustomer(object value)
+        {
+            var response = await messageService.SendPromptAsync("Are you sure you want to remove the customer?");
+            if (response == MessageResponse.Yes)
             {
-                _messageService.ShowErrorMessage("Couldn't remove the customer due to unknown error");
-                return;
+                RemoveCustomer(value as Customer);
             }
-            var customer = (Customer)value;
+        }
+
+        private void RemoveCustomer(Customer customer)
+        {
             Customers.Remove(customer);
             ClearSelection();
         }
@@ -151,19 +178,7 @@ namespace MyFirstUwpApp.ViewModels
         {
             FirstName = string.Empty;
             LastName = string.Empty;
-            SelectedCustomer = Customer.Empty;
-        }
-
-        private void SelectCustomer(object value)
-        {
-            if (!(value is Customer))
-            {
-                _messageService.ShowErrorMessage("Couldn't select the customer due to unknown error");
-                return;
-            }
-            SelectedCustomer = (Customer)value;
-            FirstName = SelectedCustomer.FirstName;
-            LastName = SelectedCustomer.LastName;
+            SelectedCustomer = new Customer();
         }
     }
 }

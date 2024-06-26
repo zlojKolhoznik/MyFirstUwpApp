@@ -6,7 +6,7 @@
     xmlns:local="using:MyFirstUwpApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:models="using:MyFirstUwpApp.Models"
+    xmlns:models="using:MyFirstUwpApp.Models" xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
     mc:Ignorable="d"
     Width="600"
     Height="800"
@@ -54,72 +54,74 @@
                     RelativePanel.Below="spForm"
                     Command="{x:Bind ViewModel.ClearSelectionCommand}"/>
         </StackPanel>
-        <StackPanel RelativePanel.Below="spButtons"
-                    RelativePanel.AlignHorizontalCenterWithPanel="True"
-                    RelativePanel.AlignBottomWithPanel="True"
-                    RelativePanel.AlignLeftWithPanel="True"
-                    RelativePanel.AlignRightWithPanel="True"
-                    Margin="30">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="135"/>
-                    <ColumnDefinition Width="135"/>
-                    <ColumnDefinition Width="135"/>
-                    <ColumnDefinition Width="135"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="First name"
-                           FontSize="18"
-                           Grid.Column="0"
-                           FontWeight="Bold"/>
-                <TextBlock Text="Last name"
-                           FontSize="18"
-                           Grid.Column="1"
-                           FontWeight="Bold"/>
-            </Grid>
-            <ScrollViewer Height="400" 
-                          HorizontalScrollMode="Disabled"
-                          HorizontalScrollBarVisibility="Hidden"
-                          VerticalScrollMode="Auto"
-                          VerticalScrollBarVisibility="Auto">
-                <GridView x:Name="gvCustomers"
-                          ItemsSource="{x:Bind ViewModel.Customers, Mode=OneWay}">
-                    <GridView.ItemTemplate>
-                        <DataTemplate x:DataType="models:Customer">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="135"/>
-                                    <ColumnDefinition Width="135"/>
-                                    <ColumnDefinition Width="135"/>
-                                    <ColumnDefinition Width="135"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="{x:Bind FirstName, Mode=OneWay}"
-                                       FontSize="18"
-                                       Grid.Column="0"/>
-                                <TextBlock Text="{x:Bind LastName, Mode=OneWay}"
-                                        FontSize="18"
-                                        Grid.Column="1"/>
+        <controls:DataGrid x:Name="dgCustomers"
+                           RelativePanel.Below="spButtons"
+                           RelativePanel.AlignBottomWithPanel="True"
+                           RelativePanel.AlignLeftWithPanel="True"
+                           RelativePanel.AlignRightWithPanel="True"
+                           SelectionMode="Single"
+                           BeginningEdit="OnDataGridBeginningEdit"
+                           RowEditEnded="OnDataGridRowEditEnded"
+                           ItemsSource="{x:Bind ViewModel.Customers, Mode=OneWay}"
+                           AutoGenerateColumns="False"
+                           Margin="0,20,0,0">
+            <controls:DataGrid.Columns>
+                <controls:DataGridTextColumn Header="First name" 
+                                             Binding="{Binding FirstName}" 
+                                             FontSize="18"
+                                             Width="3*"/>
+                <controls:DataGridTextColumn Header="Last name"
+                                             Binding="{Binding LastName}"
+                                             FontSize="18"
+                                             Width="3*"/>
+                <controls:DataGridTemplateColumn Header="Edit"
+                                                 Width="3*">
+                    <controls:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Center">
                                 <Button Content="Edit"
-                                    FontSize="18"
-                                    Grid.Column="2"
-                                    Command="{Binding ViewModel.SelectCustomerCommand, ElementName=Window}"
-                                    CommandParameter="{x:Bind}"
-                                    Padding="15,5"/>
-                                <Button Content="Delete"
-                                    FontSize="18"
-                                    Grid.Column="3"
-                                    Command="{Binding ViewModel.RemoveCustomerCommand, ElementName=Window}"
-                                    CommandParameter="{x:Bind}"
-                                    Padding="15,5"/>
-                            </Grid>
+                                        x:Name="btnEdit"
+                                        FontSize="14"
+                                        Padding="10,5"
+                                        Margin="5"
+                                        Click="OnEditCustomerButtonClick"
+                                        HorizontalAlignment="Center"/>
+                                <Button Content="Save"
+                                        x:Name="btnSave"
+                                        FontSize="14"
+                                        Padding="10,5"
+                                        Margin="5"
+                                        Click="OnSaveEditingButtonClick"
+                                        Visibility="Collapsed"
+                                        HorizontalAlignment="Center"/>
+                                <Button Content="Cancel"
+                                        x:Name="btnCancel"
+                                        FontSize="14"
+                                        Padding="10,5"
+                                        Margin="5"
+                                        Click="OnCancelEditingButtonClick"
+                                        Visibility="Collapsed"
+                                        HorizontalAlignment="Center"/>
+                                
+                            </StackPanel>
                         </DataTemplate>
-                    </GridView.ItemTemplate>
-                    <GridView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <ItemsWrapGrid Orientation="Vertical"/>
-                        </ItemsPanelTemplate>
-                    </GridView.ItemsPanel>
-                </GridView>
-            </ScrollViewer>
-        </StackPanel>
+                    </controls:DataGridTemplateColumn.CellTemplate>
+                </controls:DataGridTemplateColumn>
+                <controls:DataGridTemplateColumn Header="Remove"
+                                                 Width="2*">
+                    <controls:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Remove"
+                                    FontSize="14"
+                                    Padding="10,5"
+                                    Margin="0,5"
+                                    Click="OnDeleteCustomerButtonClick"
+                                    HorizontalAlignment="Center"/>
+                        </DataTemplate>
+                    </controls:DataGridTemplateColumn.CellTemplate>
+                </controls:DataGridTemplateColumn>
+            </controls:DataGrid.Columns>
+        </controls:DataGrid>
     </RelativePanel>
 </Page>
