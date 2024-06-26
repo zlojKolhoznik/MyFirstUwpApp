@@ -152,6 +152,7 @@ namespace MyFirstUwpApp.ViewModels
         {
             customer.FirstName = FirstName;
             customer.LastName = LastName;
+            Customers.Add(customer);
         }
 
         private async void HandleRemoveCustomer(object value)
