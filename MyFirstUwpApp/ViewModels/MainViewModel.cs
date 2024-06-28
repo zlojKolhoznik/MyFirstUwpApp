@@ -132,13 +132,9 @@ namespace MyFirstUwpApp.ViewModels
             {
                 messageService.SendErrorMessage("First name and last name are required");
             }
-            else if (!(value is Customer))
-            {
-                messageService.SendErrorMessage("Couldn't add a new customer due to unknown error");
-            }
             else
             {
-                AddCustomer(value as Customer);
+                AddCustomer((Customer)value);
                 ClearSelection();
             }
         }
@@ -155,7 +151,7 @@ namespace MyFirstUwpApp.ViewModels
             var response = await messageService.SendPromptAsync("Are you sure you want to remove the customer?");
             if (response == MessageResponse.Yes)
             {
-                RemoveCustomer(value as Customer);
+                RemoveCustomer((Customer)value);
             }
         }
 
@@ -167,7 +163,7 @@ namespace MyFirstUwpApp.ViewModels
 
         private bool CustomerExists(object value)
         {
-            return value is Customer customer && Customers.Contains(customer);
+            return Customers.Contains((Customer)value);
         }
 
         private void ClearSelection(object value = null)
