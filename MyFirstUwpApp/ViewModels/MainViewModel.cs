@@ -1,6 +1,5 @@
 ﻿using MyFirstUwpApp.Models;
 using MyFirstUwpApp.Services.MessageService;
-using System;
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using Windows.Storage;
@@ -13,8 +12,6 @@ namespace MyFirstUwpApp.ViewModels
         private readonly IMessageService messageService;
 
         private ObservableCollection<Customer> customers;
-        private Customer selectedCustomer;
-        private Customer savedCustomer;
         private int savedCustomerIndex;
         private string firstName;
         private string lastName;
@@ -22,8 +19,8 @@ namespace MyFirstUwpApp.ViewModels
         public MainViewModel(IMessageService messageService)
         {
             customers = new ObservableCollection<Customer>();
-            SelectedCustomer = new Customer();
             this.messageService = messageService;
+            SavedCustomerIndex = -1;
         }
 
         public ObservableCollection<Customer> Customers
@@ -34,19 +31,6 @@ namespace MyFirstUwpApp.ViewModels
                 if (customers != value)
                 {
                     customers = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public Customer SelectedCustomer
-        {
-            get => selectedCustomer;
-            set
-            {
-                if (selectedCustomer != value)
-                {
-                    selectedCustomer = value;
                     OnPropertyChanged();
                 }
             }
@@ -78,53 +62,31 @@ namespace MyFirstUwpApp.ViewModels
                 }
             }
         }
+        public int SavedCustomerIndex
+        {
+            get => savedCustomerIndex;
+            set
+            {
+                if (savedCustomerIndex != value)
+                {
+                    savedCustomerIndex = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(EditingCustomer));
+                }
+            }
+        }
+
+        public Customer EditingCustomer => SavedCustomerIndex >= 0 ? Customers[SavedCustomerIndex] : new Customer();
 
         public RelayCommand AddCustomerCommand => new RelayCommand(HandleAddCustomer);
 
+        public RelayCommand EnterEditingModeCommand => new RelayCommand(o => EnterEditingMode((Customer)o), CustomerExists);
+
+        public RelayCommand ExitEditingModeCommand => new RelayCommand(_ => ExitEditingMode(), _ => SavedCustomerIndex >= 0);
+
         public RelayCommand RemoveCustomerCommand => new RelayCommand(HandleRemoveCustomer, CustomerExists);
 
-        public RelayCommand ClearSelectionCommand => new RelayCommand(ClearSelection);
-
-        public void LoadCustomers()
-        {
-            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-            if (localSettings.Values[CustomersSettingsKey] is string customersJson)
-            {
-                Customers = JsonSerializer.Deserialize<ObservableCollection<Customer>>(customersJson);
-            }
-        }
-
-        public void SaveCustomers()
-        {
-            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
-            localSettings.Values[CustomersSettingsKey] = JsonSerializer.Serialize(Customers);
-        }
-
-        public void SaveCustomerState(Customer customer)
-        {
-            savedCustomer = new Customer
-            {
-                FirstName = customer.FirstName,
-                LastName = customer.LastName
-            };
-            savedCustomerIndex = Customers.IndexOf(customer);
-        }
-
-        public void RestoreSavedCustomerState()
-        {
-            if (!(savedCustomer is null))
-            {
-                Customer toRestore = Customers[savedCustomerIndex];
-                toRestore.FirstName = savedCustomer.FirstName;
-                toRestore.LastName = savedCustomer.LastName;
-                savedCustomer = null;
-            }
-        }
-
-        public void ReleaseSavedCustomerState()
-        {
-            savedCustomer = null;
-        }
+        public RelayCommand ResetInputCommand => new RelayCommand(_ => ResetInput());
 
         private void HandleAddCustomer(object value)
         {
@@ -134,16 +96,36 @@ namespace MyFirstUwpApp.ViewModels
             }
             else
             {
-                AddCustomer((Customer)value);
-                ClearSelection();
+                CreateAndAddCustomer();
+                ResetInput();
             }
         }
 
-        private void AddCustomer(Customer customer)
+        private void CreateAndAddCustomer()
         {
-            customer.FirstName = FirstName;
-            customer.LastName = LastName;
+            var customer = new Customer { FirstName = FirstName, LastName = LastName };
             Customers.Add(customer);
+        }
+
+        private void ResetInput()
+        {
+            FirstName = string.Empty;
+            LastName = string.Empty;
+        }
+
+        private void EnterEditingMode(Customer customer)
+        {
+            SavedCustomerIndex = Customers.IndexOf(customer);
+        }
+
+        private bool CustomerExists(object value)
+        {
+            return Customers.Contains((Customer)value);
+        }
+
+        private void ExitEditingMode()
+        {
+            SavedCustomerIndex = -1;
         }
 
         private async void HandleRemoveCustomer(object value)
@@ -158,19 +140,21 @@ namespace MyFirstUwpApp.ViewModels
         private void RemoveCustomer(Customer customer)
         {
             Customers.Remove(customer);
-            ClearSelection();
         }
 
-        private bool CustomerExists(object value)
+        public void LoadCustomers()
         {
-            return Customers.Contains((Customer)value);
+            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+            if (localSettings.Values[CustomersSettingsKey] is string customersJson)
+            {
+                Customers = JsonSerializer.Deserialize<ObservableCollection<Customer>>(customersJson);
+            }
         }
 
-        private void ClearSelection(object value = null)
+        public void SaveCustomers()
         {
-            FirstName = string.Empty;
-            LastName = string.Empty;
-            SelectedCustomer = new Customer();
+            ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
+            localSettings.Values[CustomersSettingsKey] = JsonSerializer.Serialize(Customers);
         }
     }
 }

@@ -6,13 +6,22 @@
     xmlns:local="using:MyFirstUwpApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:models="using:MyFirstUwpApp.Models" xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:models="using:MyFirstUwpApp.Models" 
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:proxy="using:MyFirstUwpApp.Proxy"
+    xmlns:actions="using:MyFirstUwpApp.Actions"
     mc:Ignorable="d"
-    Width="600"
-    Height="800"
+    Width="1280"
+    Height="720"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     Loaded="{x:Bind ViewModel.LoadCustomers}">
-
+    <Page.Resources>
+        <!-- These BindingProxies are implemented in order to access objects outside of DataTemplate namescope -->
+        <proxy:BindingProxy Value="{x:Bind dgCustomers}" x:Key="DataGridProxy"/>
+        <proxy:BindingProxy Value="{x:Bind ViewModel}" x:Key="ViewModelProxy"/>
+    </Page.Resources>
     <RelativePanel>
         <StackPanel Orientation="Horizontal"
                     RelativePanel.AlignHorizontalCenterWithPanel="True"
@@ -43,8 +52,7 @@
                     Padding="15,5"
                     RelativePanel.AlignHorizontalCenterWithPanel="True"
                     RelativePanel.Below="spForm"
-                    Command="{x:Bind ViewModel.AddCustomerCommand}"
-                    CommandParameter="{x:Bind ViewModel.SelectedCustomer, Mode=OneWay}"/>
+                    Command="{x:Bind ViewModel.AddCustomerCommand}"/>
             <Button x:Name="btnCancel"
                     Content="Cancel"
                     FontSize="18"
@@ -52,7 +60,7 @@
                     Padding="15,5"
                     RelativePanel.RightOf="btnSave"
                     RelativePanel.Below="spForm"
-                    Command="{x:Bind ViewModel.ClearSelectionCommand}"/>
+                    Command="{x:Bind ViewModel.ResetInputCommand}"/>
         </StackPanel>
         <controls:DataGrid x:Name="dgCustomers"
                            RelativePanel.Below="spButtons"
@@ -60,8 +68,6 @@
                            RelativePanel.AlignLeftWithPanel="True"
                            RelativePanel.AlignRightWithPanel="True"
                            SelectionMode="Single"
-                           BeginningEdit="OnDataGridBeginningEdit"
-                           RowEditEnded="OnDataGridRowEditEnded"
                            ItemsSource="{x:Bind ViewModel.Customers, Mode=OneWay}"
                            AutoGenerateColumns="False"
                            Margin="0,20,0,0">
@@ -79,36 +85,84 @@
                     <controls:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal"
-                                        HorizontalAlignment="Center">
+                                        HorizontalAlignment="Center"
+                                        x:Name="StackPanel">
                                 <Button Content="Edit"
                                         x:Name="btnEdit"
                                         FontSize="14"
                                         Padding="10,5"
                                         Margin="5"
-                                        Click="OnEditCustomerButtonClick"
-                                        HorizontalAlignment="Center"/>
+                                        HorizontalAlignment="Center">
+                                    <interactivity:Interaction.Behaviors>
+                                        <core:EventTriggerBehavior EventName="Click">
+                                            <actions:DataGridBeginEditAction DataGrid="{Binding Value, Source={StaticResource DataGridProxy}}"/>
+                                            <core:InvokeCommandAction Command="{Binding Value.EnterEditingModeCommand, Source={StaticResource ViewModelProxy}}"
+                                                                      CommandParameter="{Binding}"/>
+                                        </core:EventTriggerBehavior>
+                                    </interactivity:Interaction.Behaviors>
+                                </Button>
                                 <Button Content="Save"
                                         x:Name="btnSave"
                                         FontSize="14"
                                         Padding="10,5"
                                         Margin="5"
-                                        Click="OnSaveEditingButtonClick"
                                         Visibility="Collapsed"
-                                        HorizontalAlignment="Center"/>
+                                        HorizontalAlignment="Center">
+                                    <interactivity:Interaction.Behaviors>
+                                        <core:EventTriggerBehavior EventName="Click">
+                                            <actions:DataGridCommitEditAction DataGrid="{Binding Value, Source={StaticResource DataGridProxy}}"/>
+                                            <core:InvokeCommandAction Command="{Binding Value.ExitEditingModeCommand, Source={StaticResource ViewModelProxy}}"/>
+                                        </core:EventTriggerBehavior>
+                                    </interactivity:Interaction.Behaviors>
+                                </Button>
                                 <Button Content="Cancel"
                                         x:Name="btnCancel"
                                         FontSize="14"
                                         Padding="10,5"
                                         Margin="5"
-                                        Click="OnCancelEditingButtonClick"
                                         Visibility="Collapsed"
-                                        HorizontalAlignment="Center"/>
-                                
+                                        HorizontalAlignment="Center">
+                                    <interactivity:Interaction.Behaviors>
+                                        <core:EventTriggerBehavior EventName="Click">
+                                            <actions:DataGridCancelEditAction DataGrid="{Binding Value, Source={StaticResource DataGridProxy}}"/>
+                                            <core:InvokeCommandAction Command="{Binding Value.ExitEditingModeCommand, Source={StaticResource ViewModelProxy}}"/>
+                                        </core:EventTriggerBehavior>
+                                    </interactivity:Interaction.Behaviors>
+                                </Button>
+                                <interactivity:Interaction.Behaviors>
+                                    <core:DataTriggerBehavior Binding="{Binding Value.EditingCustomer.Guid, Source={StaticResource ViewModelProxy}}"
+                                                              ComparisonCondition="Equal"
+                                                              Value="{Binding Guid}">
+                                        <core:ChangePropertyAction TargetObject="{Binding ElementName=btnEdit}"
+                                                                   PropertyName="Visibility"
+                                                                   Value="Collapsed"/>
+                                        <core:ChangePropertyAction TargetObject="{Binding ElementName=btnSave}"
+                                                                   PropertyName="Visibility"
+                                                                   Value="Visible"/>
+                                        <core:ChangePropertyAction TargetObject="{Binding ElementName=btnCancel}"
+                                                                   PropertyName="Visibility"
+                                                                   Value="Visible"/>
+                                    </core:DataTriggerBehavior>
+                                    <core:DataTriggerBehavior Binding="{Binding Value.EditingCustomer.Guid, Source={StaticResource ViewModelProxy}}"
+                                                              ComparisonCondition="NotEqual"
+                                                              Value="{Binding Guid}">
+                                        <core:ChangePropertyAction TargetObject="{Binding ElementName=btnEdit}"
+                                                                   PropertyName="Visibility"
+                                                                   Value="Visible"/>
+                                        <core:ChangePropertyAction TargetObject="{Binding ElementName=btnSave}"
+                                                                   PropertyName="Visibility"
+                                                                   Value="Collapsed"/>
+                                        <core:ChangePropertyAction TargetObject="{Binding ElementName=btnCancel}"
+                                                                   PropertyName="Visibility"
+                                                                   Value="Collapsed"/>
+                                    </core:DataTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
                             </StackPanel>
                         </DataTemplate>
                     </controls:DataGridTemplateColumn.CellTemplate>
                 </controls:DataGridTemplateColumn>
                 <controls:DataGridTemplateColumn Header="Remove"
+                                                 IsReadOnly="True"
                                                  Width="2*">
                     <controls:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -116,12 +170,30 @@
                                     FontSize="14"
                                     Padding="10,5"
                                     Margin="0,5"
-                                    Click="OnDeleteCustomerButtonClick"
-                                    HorizontalAlignment="Center"/>
+                                    HorizontalAlignment="Center">
+                                <interactivity:Interaction.Behaviors>
+                                    <core:EventTriggerBehavior EventName="Click">
+                                        <core:InvokeCommandAction Command="{Binding Value.RemoveCustomerCommand, Source={StaticResource ViewModelProxy}}"
+                                                                  CommandParameter="{Binding}"/>
+                                    </core:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </Button>
                         </DataTemplate>
                     </controls:DataGridTemplateColumn.CellTemplate>
                 </controls:DataGridTemplateColumn>
             </controls:DataGrid.Columns>
+            <interactivity:Interaction.Behaviors>
+                <!-- When user selects another row without pressing Save or Cancel buttons, save editing results -->
+                <core:EventTriggerBehavior EventName="SelectionChanged">
+                    <core:InvokeCommandAction Command="{x:Bind ViewModel.ExitEditingModeCommand}"/>
+                </core:EventTriggerBehavior>
+                <core:EventTriggerBehavior EventName="BeginningEdit">
+                    <core:InvokeCommandAction Command="{x:Bind ViewModel.EnterEditingModeCommand}"
+                          CommandParameter="{x:Bind dgCustomers.SelectedItem, Mode=OneWay}"/>
+                    <actions:DataGridValidateEditingColumnAction DataGrid="{Binding DataContext, Source={StaticResource DataGridProxy}}"
+                                                                   MaxEditableColumnIndex="1"/>
+                </core:EventTriggerBehavior>
+            </interactivity:Interaction.Behaviors>
         </controls:DataGrid>
     </RelativePanel>
 </Page>
